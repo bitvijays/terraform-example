@@ -1,7 +1,7 @@
 
 # Base OS image to use to create a cluster of different nodes
-resource "libvirt_volume" "debian" {
-  name = format("%s.%s", var.domain_name, "debian")
+resource "libvirt_volume" "base_debian_10" {
+  name = "base_debian_10"
   pool   = var.pool_name
   source = "https://cdimage.debian.org/cdimage/openstack/current/debian-10-openstack-amd64.qcow2"
 }
@@ -9,7 +9,7 @@ resource "libvirt_volume" "debian" {
 # volume to attach to the "master" domain as main disk
 resource "libvirt_volume" "debian_resized" {
   name = format("%s.%s", var.domain_name, "debian_re")
-  base_volume_id = libvirt_volume.debian.id
+  base_volume_id = libvirt_volume.base_debian_10.id
   pool           = var.pool_name
   size           = var.disk_size
 }
