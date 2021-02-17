@@ -15,6 +15,7 @@ resource "libvirt_volume" "base_image_resized" {
   base_volume_id = libvirt_volume.base_image[each.value.os_ver].id
   pool           = each.value.pool
   size           = each.value.disk_size
+  depends_on = [ libvirt_volume.base_image ]
 }
 
 # Initial configuration file (cloud_init.cfg) for user data for defining Cloud-init configuration and forward some variables to cloud_init.cfg for each instance.
@@ -27,28 +28,27 @@ data "template_file" "user_data" {
   }
 }
 
+
+data "template_file" "network_data" {
+  template   = file("${path.module}/config/network_config.cfg")
+}
+
 # Define the CloudInit for each virtual machine based on the user_data.
 resource "libvirt_cloudinit_disk" "commoninit" {
   for_each   = var.hosts
   name       = "commoninit_${each.value.name}.iso"
   user_data  = data.template_file.user_data[each.key].rendered
+#  network_config = data.template_file.network_data.rendered
   pool       = each.value.pool
 }
 
-
 # Define KVM-Guest/Domain using libvirt_domain
 resource "libvirt_domain" "VM" {
+  depends_on = [ libvirt_cloudinit_disk.commoninit, libvirt_volume.base_image_resized ]
   for_each   = var.hosts
   name       = each.value.name 
   memory     = each.value.memory
   vcpu       = each.value.vcpu
-
-#   network_interface {
-#     network_name   = var.networkname
-#     mac            = each.value.mac
-#     # If networkname is host-bridge do not wait for a lease
-#     wait_for_lease = var.networkname == "host-bridge" ? false : true
-#   }
 
   disk {
     volume_id = libvirt_volume.base_image_resized[each.key].id
@@ -75,4 +75,13 @@ resource "libvirt_domain" "VM" {
     listen_type = "address"
     autoport = true
   }
+
+  network_interface {
+    network_name = "ovs-br0"
+  }
+
+  boot_device {
+    dev = [ "hd", "network"]
+  }
+
 }

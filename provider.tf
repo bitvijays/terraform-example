@@ -16,5 +16,5 @@ terraform {
 ## qemu:///system  For running as a root to manage the system set of VMs (i.e., VMs belonging to root).
 
 provider "libvirt" {
-  uri = "qemu:///session"
+  uri = "qemu:///system"
 }

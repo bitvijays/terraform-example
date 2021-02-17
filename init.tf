@@ -58,7 +58,7 @@ module "libvirt_domain" {
   hosts = {
 #            "Puppet_Server" = {name = "Puppet_Server", hostname = "puppet", os_ver = "base_debian_10"   , pool = "UMA5", disk_size = 10 * 1024 * 1024 * 1024, vcpu = 2, memory = 4096},
 #            "Kafka_Server"  = {name = "Kafka_Server" , hostname = "kafka" , os_ver = "base_ubuntu_20_04", pool = "UMA5", disk_size = 10 * 1024 * 1024 * 1024, vcpu = 2, memory = 4096},
-#            "IPA_Server"    = {name = "IPA_Server"   , hostname = "ipa"   , os_ver = "base_centos_8"    , pool = "UMA5", disk_size = 10 * 1024 * 1024 * 1024, vcpu = 2, memory = 4096},            
+#            "IPA_Server"    = {name = "IPA_Server"   , hostname = "ipa"   , os_ver = "base_centos_8"    , pool = "UMA5", disk_size = 10 * 1024 * 1024 * 1024, vcpu = 2, memory = 4096},
   }
 
 }
