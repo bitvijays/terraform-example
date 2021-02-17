@@ -1,4 +1,4 @@
-## libvirt is currently not officially supported plugin and hence we define libvirt and libvirt provider in the same file
+## libvirt is currently not officially supported plugin and hence we define libvirt
 terraform {
   required_version = ">= 0.13"
   required_providers {
@@ -11,8 +11,9 @@ terraform {
 
 # Provide the URI for the provider
 
-## By default, if virsh is run as a normal user it will connect to libvirt using qemu:///session URI string. This URI allows virsh to manage only the set of VMs belonging to this particular user. 
-## To manage the system set of VMs (i.e., VMs belonging to root) virsh should be run as root or with qemu:///system URI
+# There can be two values for uri
+## qemu:///session For running as a normal user. The URI allows virsh to manage only the set of VMs belonging to this particular user. 
+## qemu:///system  For running as a root to manage the system set of VMs (i.e., VMs belonging to root).
 
 provider "libvirt" {
   uri = "qemu:///session"

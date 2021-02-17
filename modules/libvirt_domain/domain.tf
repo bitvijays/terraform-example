@@ -1,46 +1,47 @@
 # Define the base image from the Local storage
+# Source define the location of the local image (downloaded from internet); we concatenate it with base_image_location and the image name.
 resource "libvirt_volume" "base_image" {
   for_each = var.images
-  name   = each.value.name
-  source = format("%s%s", var.base_image_location, each.value.name)
-  pool = each.value.pool
+  name     = each.value.name
+  source   = format("%s%s", var.base_image_location, each.value.name)
+  pool     = each.value.pool
 }
 
-# # volume to attach to the "master" domain as main disk
+# We re-define the size of the hard-disk based on the hosts variable
+# Refer the https://github.com/dmacvicar/terraform-provider-libvirt/tree/master/examples/v0.13/resize_base 
 resource "libvirt_volume" "base_image_resized" {
-  for_each = var.hosts
-  name = format("%s.%s", each.value.name, "image")
+  for_each       = var.hosts
+  name           = format("%s.%s", each.value.name, "image")
   base_volume_id = libvirt_volume.base_image[each.value.os_ver].id
   pool           = each.value.pool
   size           = each.value.disk_size
 }
 
-
-# Use cloudinit config file and forward some variables to cloud_init.cfg
+# Initial configuration file (cloud_init.cfg) for user data for defining Cloud-init configuration and forward some variables to cloud_init.cfg for each instance.
 data "template_file" "user_data" {
-  template = file("${path.module}/config/cloud_init.cfg")
+  template   = file("${path.module}/config/cloud_init.cfg")
   for_each   = var.hosts
-  vars     = {
+  vars       = {
     hostname   = each.value.hostname
     domainname = var.domainname
   }
 }
 
-# Use CloudInit to add the instance
+# Define the CloudInit for each virtual machine based on the user_data.
 resource "libvirt_cloudinit_disk" "commoninit" {
   for_each   = var.hosts
-  name      = "commoninit_${each.value.name}.iso"
-  user_data = data.template_file.user_data[each.key].rendered
-  pool = each.value.pool
+  name       = "commoninit_${each.value.name}.iso"
+  user_data  = data.template_file.user_data[each.key].rendered
+  pool       = each.value.pool
 }
 
 
-# Define KVM-Guest/Domain
+# Define KVM-Guest/Domain using libvirt_domain
 resource "libvirt_domain" "VM" {
   for_each   = var.hosts
-  name   = each.value.name 
-  memory = each.value.memory
-  vcpu   = each.value.vcpu
+  name       = each.value.name 
+  memory     = each.value.memory
+  vcpu       = each.value.vcpu
 
 #   network_interface {
 #     network_name   = var.networkname
@@ -75,4 +76,3 @@ resource "libvirt_domain" "VM" {
     autoport = true
   }
 }
-## END OF KVM DOMAIN CONFIG

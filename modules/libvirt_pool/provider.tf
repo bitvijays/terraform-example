@@ -1,4 +1,4 @@
-## libvirt is currently not officially supported plugin and hence we define libvirt and libvirt provider in the same file
+## libvirt is currently not officially supported plugin and hence we define libvirt
 terraform {
  required_version = ">= 0.13"
   required_providers {

@@ -1,9 +1,10 @@
-# File to define the Pool for the storage of VM Hard-disks
+# Resource to define a pool. We read the pools variable (of type map).
+# Refer https://www.terraform.io/docs/language/meta-arguments/for_each.html#basic-syntax
 
-## A storage pool is a quantity of storage set aside by an administrator, often a dedicated storage administrator, for use by virtual machines.
-# Refer https://libvirt.org/storage.html
+# We have added lifecycle as we only want to either create or delete the pool. We don't want Terraform to 
+# monitor the changes such as availble disk space etc. As it deletes and creates it the resource again
 
-# create pool
+# Refer https://www.terraform.io/docs/language/meta-arguments/lifecycle.html
 resource "libvirt_pool" "libvirt_pool_x" {
   for_each = var.pools
   name = each.value.name
