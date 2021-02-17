@@ -3,12 +3,6 @@
 ## A storage pool is a quantity of storage set aside by an administrator, often a dedicated storage administrator, for use by virtual machines.
 # Refer https://libvirt.org/storage.html
 
-variable "pools" {
-    default = {
-        "pool_UMA" = { name = "UMA4", path = "/tmp/UMA4"},
-    }
-}
-
 # create pool
 resource "libvirt_pool" "libvirt_pool_x" {
   for_each = var.pools

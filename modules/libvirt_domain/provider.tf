@@ -8,12 +8,3 @@ terraform {
     }
   }
 }
-
-# # Provide the URI for the provider
-
-# ## By default, if virsh is run as a normal user it will connect to libvirt using qemu:///session URI string. This URI allows virsh to manage only the set of VMs belonging to this particular user. 
-# ## To manage the system set of VMs (i.e., VMs belonging to root) virsh should be run as root or with qemu:///system URI
-
-# provider "libvirt" {
-#   uri = "qemu:///system"
-# }
