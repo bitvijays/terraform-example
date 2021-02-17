@@ -49,7 +49,36 @@ Refer [Cloud-Init Modules](https://cloudinit.readthedocs.io/en/latest/topics/mod
 
 Modify [Cloud_init.cfg](modules/libvirt_domain/config/cloud_init.cfg)
 
-### Step 4: Define the Virtual Machine required
+### Step 4: Define the network used
+
+We would be using `openvswitch` to perform the networking in the bridge mode. 
+
+#### Create a file with the below xml
+
+```xml
+<network>
+  <name>ovs-br0</name>
+  <forward mode='bridge'/>
+  <bridge name='ovs-br0'/>
+  <virtualport type='openvswitch'/>
+</network>
+```
+
+Name of our bridge is `ovs-br0`.
+
+#### Define the network
+
+```console
+virsh net-define <xml_file>
+```
+
+#### Start the network
+
+```console
+virsh net-start ovs-br0
+```
+
+### Step 5: Define the Virtual Machine required
 
 ```hcl
 module "libvirt_domain" {
