@@ -8,8 +8,8 @@
 module "libvirt_Pool" {
   source = "./modules/libvirt_pool/"
   pools = {
-    "pool_images" = { name = "OS_Images", path = "/media/bitvijays/Images/" },
-    "pool_UMA"    = { name = "UMA5"     , path = "/media/bitvijays/VM_HD/"  },
+    "pool_base_image" = { name = "base_image", path = "/var/lib/libvirt/images/base_image/" },
+    "pool_vm_image"    = { name = "vm_image" , path = "/var/lib/libvirt/images/vm_image/"  },
   }
 }
 
@@ -19,14 +19,20 @@ module "libvirt_Pool" {
 
 module "libvirt_Images" {
   source      = "./modules/libvirt_images/"
-  pool_images = "OS_Images"
+  pool_images = "base_image"
   images = {
     # Debian Base OS image
-    "base_debian_10"    = { name = "base_debian_10"   , pool = "OS_Images", source = "https://cdimage.debian.org/cdimage/openstack/current/debian-10-openstack-amd64.qcow2" },
+    "base_debian_10"    = { name = "base_debian_10"   , pool = "base_image", source = "https://cdimage.debian.org/cdimage/cloud/buster/latest/debian-10-genericcloud-amd64.qcow2" },
+    "base_debian_11"    = { name = "base_debian_11"   , pool = "base_image", source = "https://cloud.debian.org/images/cloud/bullseye/latest/debian-11-genericcloud-amd64.qcow2" },
+
     # Ubuntu Base OS image
-    "base_ubuntu_20_04" = { name = "base_ubuntu_20_04", pool = "OS_Images", source = "https://cloud-images.ubuntu.com/focal/current/focal-server-cloudimg-amd64-disk-kvm.img" },
+    "base_ubuntu_20_04" = { name = "base_ubuntu_20_04", pool = "base_image", source = "https://cloud-images.ubuntu.com/focal/current/focal-server-cloudimg-amd64-disk-kvm.img" },
+
     # CentOS Base OS image
-    "base_centos_8"     = { name = "base_centos_8"    , pool = "OS_Images", source = "https://cloud.centos.org/centos/8/x86_64/images/CentOS-8-GenericCloud-8.3.2011-20201204.2.x86_64.qcow2" },
+    "base_centos_7"     = { name = "base_centos_7"    , pool = "base_image", source = "https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud-1907.qcow2" },
+    "base_centos_8"     = { name = "base_centos_8"    , pool = "base_image", source = "https://cloud.centos.org/centos/8/x86_64/images/CentOS-8-GenericCloud-8.4.2105-20210603.0.x86_64.qcow2" },
+    "base_centos_9"     = { name = "base_centos_9"    , pool = "base_image", source = "https://cloud.centos.org/centos/9-stream/x86_64/images/CentOS-Stream-GenericCloud-9-20211216.1.x86_64.qcow2" },
+    "base_fedora_34"     = { name = "base_fedora_34"    , pool = "base_image", source = "https://www.mirrorservice.org/sites/dl.fedoraproject.org/pub/fedora/linux/releases/34/Cloud/x86_64/images/Fedora-Cloud-Base-34-1.2.x86_64.qcow2" },
   }
   depends_on = [module.libvirt_Pool]
 }
@@ -44,21 +50,36 @@ module "libvirt_Images" {
 module "libvirt_domain" {
   source              = "./modules/libvirt_domain/"
   domainname          = "bitvijays.local"
-  base_image_location = "/media/bitvijays/Images/"
+  base_image_location = "/var/lib/libvirt/images/base_image/"
   depends_on          = [module.libvirt_Images]
   images = {
     # Debian Base OS image
-    "base_debian_10" = { name = "base_debian_10", pool = "UMA5" },
+    "base_debian_10" = { name = "base_debian_10", pool = "base_image" },
+    "base_debian_11" = { name = "base_debian_11", pool = "base_image" },    
     # Ubuntu Base OS image
-    "base_ubuntu_20_04" = { name = "base_ubuntu_20_04", pool = "UMA5" },
+    "base_ubuntu_20_04" = { name = "base_ubuntu_20_04", pool = "base_image" },
     # CentOS Base OS image
-    "base_centos_8" = { name = "base_centos_8", pool = "UMA5" },
+    "base_centos_7" = { name = "base_centos_7", pool = "base_image" },
+    "base_centos_8" = { name = "base_centos_8", pool = "base_image" },
+    "base_centos_9" = { name = "base_centos_9", pool = "base_image" },
+
+    # Fedora Base OS image
+    "base_fedora_34" = { name = "base_fedora_34", pool = "base_image" },
   }
 
   hosts = {
-#            "Puppet_Server" = {name = "Puppet_Server", hostname = "puppet", os_ver = "base_debian_10"   , pool = "UMA5", disk_size = 10 * 1024 * 1024 * 1024, vcpu = 2, memory = 4096},
-#            "Kafka_Server"  = {name = "Kafka_Server" , hostname = "kafka" , os_ver = "base_ubuntu_20_04", pool = "UMA5", disk_size = 10 * 1024 * 1024 * 1024, vcpu = 2, memory = 4096},
-#            "IPA_Server"    = {name = "IPA_Server"   , hostname = "ipa"   , os_ver = "base_centos_8"    , pool = "UMA5", disk_size = 10 * 1024 * 1024 * 1024, vcpu = 2, memory = 4096},
+           "Puppet_Server"     = {name = "Puppet_Server"    , hostname = "puppet"    , os_ver = "base_debian_10"   , pool = "vm_image", disk_size = 40 * 1024 * 1024 * 1024, vcpu = 2, memory = 8 * 1024},
+           "Cloudcore_Server"  = {name = "Cloudcore_Server" , hostname = "cloudcore" , os_ver = "base_debian_10"   , pool = "vm_image", disk_size = 40 * 1024 * 1024 * 1024, vcpu = 2, memory = 8 * 1024},
+            "IPA_Server"       = {name = "IPA_Server"       , hostname = "ipa"      , os_ver = "base_centos_8"    , pool = "vm_image", disk_size = 40 * 1024 * 1024 * 1024, vcpu = 2, memory = 8 * 1024},
+            "Rancher_Server"    = {name = "Rancher_Server"  , hostname = "rancher"  , os_ver = "base_debian_10"   , pool = "vm_image", disk_size = 20 * 1024 * 1024 * 1024, vcpu = 2, memory = 4 * 1024},
+             "ceph_server"       = {name = "ceph_server1"  , hostname = "cephserver"  , os_ver = "base_centos_8"   , pool = "vm_image", disk_size = 40 * 1024 * 1024 * 1024, vcpu = 4, memory = 8 * 1024},
+             "K8S_Worker1"       = {name = "K8S_Worker1"  , hostname = "k8sworker1"  , os_ver = "base_debian_10"   , pool = "vm_image", disk_size = 40 * 1024 * 1024 * 1024, vcpu = 2, memory = 8 * 1024},
+             "K8S_Worker2"       = {name = "K8S_Worker2"  , hostname = "k8sworker2"  , os_ver = "base_debian_10"   , pool = "vm_image", disk_size = 40 * 1024 * 1024 * 1024, vcpu = 2, memory = 8 * 1024},
+            # "KeyCloak"          = {name = "Keycloak"  , hostname = "keycloak"  , os_ver = "base_debian_10"   , pool = "vm_image", disk_size = 10 * 1024 * 1024 * 1024, vcpu = 2, memory = 2 * 1024},
+#            "Teleport_Server"   = {name = "Teleport_Server"  , hostname = "teleport"  , os_ver = "base_debian_10"   , pool = "vm_image", disk_size = 40 * 1024 * 1024 * 1024, vcpu = 2, memory = 8 * 1024},
+#            "NFS_Server"        = {name = "NFS_Server"  , hostname = "nfs"  , os_ver = "base_centos_8"   , pool = "vm_image", disk_size = 40 * 1024 * 1024 * 1024, vcpu = 2, memory = 4 * 1024},
+#            "K3S_Server"        = {name = "K3S_Server"  , hostname = "k3sserver"  , os_ver = "base_debian_10"   , pool = "vm_image", disk_size = 20 * 1024 * 1024 * 1024, vcpu = 2, memory = 8 * 1024},
+#           "Kafka_Server"      = {name = "Kafka_Server"     , hostname = "kafka"     , os_ver = "base_debian_10"   , pool = "vm_image", disk_size = 40 * 1024 * 1024 * 1024, vcpu = 2, memory = 8 * 1024},
   }
 
 }

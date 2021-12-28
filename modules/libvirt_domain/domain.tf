@@ -5,6 +5,9 @@ resource "libvirt_volume" "base_image" {
   name     = each.value.name
   source   = format("%s%s", var.base_image_location, each.value.name)
   pool     = each.value.pool
+  lifecycle {
+    ignore_changes = all
+  }
 }
 
 # We re-define the size of the hard-disk based on the hosts variable
@@ -16,6 +19,9 @@ resource "libvirt_volume" "base_image_resized" {
   pool           = each.value.pool
   size           = each.value.disk_size
   depends_on = [ libvirt_volume.base_image ]
+  lifecycle {
+    ignore_changes = all
+  }
 }
 
 # Initial configuration file (cloud_init.cfg) for user data for defining Cloud-init configuration and forward some variables to cloud_init.cfg for each instance.
@@ -26,6 +32,7 @@ data "template_file" "user_data" {
     hostname   = each.value.hostname
     domainname = var.domainname
   }
+
 }
 
 
@@ -40,6 +47,9 @@ resource "libvirt_cloudinit_disk" "commoninit" {
   user_data  = data.template_file.user_data[each.key].rendered
 #  network_config = data.template_file.network_data.rendered
   pool       = each.value.pool
+  lifecycle {
+    ignore_changes = all
+  }
 }
 
 # Define KVM-Guest/Domain using libvirt_domain
@@ -82,6 +92,10 @@ resource "libvirt_domain" "VM" {
 
   boot_device {
     dev = [ "hd", "network"]
+  }
+
+  lifecycle {
+    ignore_changes = all
   }
 
 }
